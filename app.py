@@ -6,7 +6,8 @@ import pandas as pd
 
 
 def get_columns(ds):
-    with open('data/retail_db/schemas.json') as fp:
+    BASE_DIR = os.environ.setdefault('BASE_DIR','data/retail_db/schemas.json')
+    with open(BASE_DIR) as fp:
         schemas = json.load(fp)
     try:
         schema = schemas.get(ds)
@@ -20,19 +21,21 @@ def get_columns(ds):
         return
 
 
-def main():
-    os.makedirs('data/retail_demo', exist_ok=True)
-    for path in glob.glob('data/retail_db/*'):
+def convert_csv_to_json():
+    SRC_BASE_DIR = os.environ.setdefault('SRC_BASE_DIR','data/retail_db')
+    TGT_BASE_DIR = os.environ.setdefault('TGT_BASE_DIR', 'data/retail_demo')
+    os.makedirs(f'{TGT_BASE_DIR}', exist_ok=True)
+    for path in glob.glob(f'{SRC_BASE_DIR}/*'):
         if os.path.isdir(path):
             ds = os.path.split(path)[1]
             for file in glob.glob(f'{path}/*'):
                 df = pd.read_csv(file, names = get_columns(ds))
-                os.makedirs(f'data/retail_demo/{ds}', exist_ok=True)
+                os.makedirs(f'{TGT_BASE_DIR}/{ds}', exist_ok=True)
                 df.to_json(
-                    f'data/retail_demo/{ds}/part-{str(uuid.uuid1())}.json',
+                    f'{TGT_BASE_DIR}/{ds}/part-{str(uuid.uuid1())}.json',
                     orient = 'records',
                     lines = True 
                 )
                 print(f'Number of records processed for {os.path.split(file)[1]} in {ds} is {df.shape[0]}')
 if __name__=='__main__':
-    main()
+    convert_csv_to_json()
