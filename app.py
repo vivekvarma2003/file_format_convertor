@@ -9,7 +9,6 @@ import pandas as pd
 # modularization and reusibility  
 # modularization -> dividing large piece of code into small pieces
 
-
 def get_columns(ds):
     BASE_DIR = os.environ.setdefault('BASE_DIR','data/retail_db/schemas.json')
     with open(BASE_DIR) as fp:
@@ -39,10 +38,17 @@ def process_file(SRC_BASE_DIR,TGT_BASE_DIR,ds):
 def convert_csv_to_json():
     SRC_BASE_DIR = os.environ.setdefault('SRC_BASE_DIR','data/retail_db')
     TGT_BASE_DIR = os.environ.setdefault('TGT_BASE_DIR', 'data/retail_demo')
+    datasets = os.environ.get('DATASETS')
     os.makedirs(f'{TGT_BASE_DIR}', exist_ok=True)
-    for path in glob.glob(f'{SRC_BASE_DIR}/*'):
-        if os.path.isdir(path):
-            ds = os.path.split(path)[1]
+    if not datasets:
+        for path in glob.glob(f'{SRC_BASE_DIR}/*'):
+            if os.path.isdir(path):
+                ds = os.path.split(path)[1]
+                process_file(SRC_BASE_DIR, TGT_BASE_DIR, ds)
+    else:
+        dirs = datasets.split(',')
+        for ds in dirs:
             process_file(SRC_BASE_DIR, TGT_BASE_DIR, ds)
+
 if __name__=='__main__':
     convert_csv_to_json()
